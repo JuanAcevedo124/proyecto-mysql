@@ -1,84 +1,59 @@
-# Eventos Premier S.A.S. - Sistema de Gestión de Reservas
+# Eventos Premier S.A.S.: base de datos de reservas
 
-## Descripción del Proyecto
+Base de datos en MySQL para gestionar salones, clientes, reservas y pagos de una empresa de eventos. Incluye funciones, triggers, vistas y datos de prueba.
 
-Sistema de base de datos para la gestión de reservas de salones para reuniones, fiestas y conferencias. El sistema permite:
-- Registrar y controlar salones con su capacidad, precio y estado
-- Gestionar clientes (individuales y corporativos)
-- Realizar reservas con cálculo automático de horas y valor total
-- Registrar pagos con diferentes métodos
-- Generar reportes y consultas para toma de decisiones
+## Funcionalidades
 
-## Estructura de Archivos
+- Control de salones por capacidad, precio y estado.
+- Clientes individuales y corporativos.
+- Reservas con cálculo del valor total (IVA incluido) y validación de disponibilidad.
+- Registro de pagos.
+- Auditoría de cambios de precio.
 
-- `db_creation.sql` - Script de creación de base de datos y tablas
-- `functions.sql` - Funciones personalizadas (calcular_total_reserva, verificar_disponibilidad)
-- `triggers.sql` - Triggers de control y auditoría
-- `views_queries.sql` - Vistas y consultas SQL
-- `README.md` - Documentación del proyecto
+## Modelo
 
-## Instrucciones de Ejecución
+| Tabla | Contenido |
+|---|---|
+| `salones` | Espacios disponibles para eventos |
+| `clientes` | Clientes individuales y corporativos |
+| `reservas` | Reservas por salón y cliente |
+| `pagos` | Pagos asociados a las reservas |
+| `auditoria_precios` | Historial de cambios de precio |
 
-### 1. Crear la base de datos y tablas
+## Objetos programados
+
+| Objeto | Tipo | Propósito |
+|---|---|---|
+| `calcular_total_reserva` | Función | Calcula el valor total con IVA |
+| `verificar_disponibilidad` | Función | Indica si un salón está libre en un rango de fechas |
+| `actualizar_estado_salon_trigger` | Trigger | Marca el salón como ocupado al reservar |
+| `liberar_salon_trigger` | Trigger | Libera el salón si no quedan reservas confirmadas |
+| `auditoria_precios_trigger` | Trigger | Registra los cambios de precio |
+| `vista_resumen_reservas` | Vista | Resume la información de las reservas |
+
+## Instalación
+
+Desde el cliente de MySQL, ejecuta los scripts en este orden:
+
 ```sql
 source db_creation.sql
-```
-
-### 2. Crear funciones personalizadas
-```sql
 source functions.sql
-```
-
-### 3. Crear triggers de control y auditoría
-```sql
 source triggers.sql
-```
-
-### 4. Crear vistas y consultas
-```sql
 source views_queries.sql
 ```
 
-## Ejemplos de Funciones
+Los datos de prueba están en `datos_simulados.sql` y se describen en [datos_simulados_documentation.md](datos_simulados_documentation.md).
 
-### calcular_total_reserva
+## Ejemplos
+
 ```sql
+-- 3 horas a 25.000 con IVA del 19 %: 89250.00
 SELECT calcular_total_reserva(25000, 3);
--- Retorna: 89250.00 (3 horas * $25.000 * 1.19 IVA)
-```
 
-### verificar_disponibilidad
-```sql
+-- 1 = disponible, 0 = ocupado
 SELECT verificar_disponibilidad(1, '2024-12-15 10:00:00', '2024-12-15 13:00:00');
--- Retorna: 1 (disponible) o 0 (ocupado)
-```
 
-## Ejemplos de Triggers
-
-### actualizar_estado_salon_trigger
-Al insertar una nueva reserva, el salón cambia automáticamente a estado "Ocupado".
-
-### liberar_salon_trigger
-Al eliminar una reserva, si no hay otras reservas confirmadas, el salon vuelve a "Disponible".
-
-### auditoria_precios_trigger
-Cuando se actualiza el precio por hora de un salón, se registra automáticamente en la tabla `auditoria_precios` con el usuario y los valores anterior/nuevo.
-
-## Ejemplos de Consultas
-
-### Reservas en rango de fechas
-```sql
-SELECT * FROM vista_resumen_reservas
-WHERE fecha_inicio BETWEEN '2024-01-01' AND '2024-12-31';
-```
-
-### Salones disponibles con capacidad > X
-```sql
-SELECT * FROM salones WHERE capacidad > 100 AND estado = 'Disponible';
-```
-
-### Clientes corporativos con más de 3 reservas
-```sql
+-- Clientes corporativos con más de 3 reservas
 SELECT c.nombre_completo, COUNT(r.id) AS total_reservas
 FROM clientes c
 JOIN reservas r ON c.id = r.cliente_id
@@ -87,13 +62,7 @@ GROUP BY c.id
 HAVING COUNT(r.id) > 3;
 ```
 
-### Vista resumen de reservas
-```sql
-SELECT * FROM vista_resumen_reservas;
-```
+## Autor
 
-## Créditos y Autor
-
-- **Empresa**: Eventos Premier S.A.S.
-- **Desarrollador**: Sistema de reservas SQL
-- **Año**: 2026
+Juan José Acevedo Morales, desarrollador de software junior.
+[Portafolio](https://juanacevedo124.github.io/Portafolio/) | [GitHub](https://github.com/JuanAcevedo124) | [LinkedIn](https://www.linkedin.com/in/juan-acevedo-b24759450/)
